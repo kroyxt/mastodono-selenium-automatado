@@ -9,6 +9,7 @@ from webdriver_manager.firefox import GeckoDriverManager
 import skrapado.konstantoj as konst
 from dotenv import load_dotenv
 import os
+import wget
 
 
 load_dotenv()
@@ -21,7 +22,7 @@ class Mastodon(webdriver.Firefox):
         # self.options.add_argument("-headless")
         # super(Mastodon, self).__init__(options=self.options)
         super(Mastodon, self).__init__()
-        self.wait = WebDriverWait(self, 30)
+        self.wait = WebDriverWait(self, 60)
         self.maximize_window()
 
     def iru_al_cxefpagxo(self):
@@ -55,3 +56,43 @@ class Mastodon(webdriver.Firefox):
                 (By.XPATH, "//button[contains(text(), 'Log in')]")
             )
         ).click()
+
+    def elsxutu_bildojn(self, vorto):
+        sercxilo = self.wait.until(
+            EC.element_to_be_clickable(
+                (By.XPATH, "//div[@class='compose-panel']/div[@class='search']/input")
+            )
+        )
+        sercxilo.clear()
+        sercxilo.send_keys(f"{vorto} has:image")
+        sercxilo.send_keys(Keys.ENTER)
+
+        afisxa_modo = self.wait.until(
+            EC.element_to_be_clickable(
+                (By.XPATH, "//div[@class='account__section-headline']/button[child::span[contains(text(), 'Afiŝoj')]]")
+            )
+        )
+        afisxa_modo.click()
+        afisxa_modo.send_keys(Keys.PAGE_DOWN)
+        afisxa_modo.send_keys(Keys.PAGE_DOWN)
+
+        bildoj = self.wait.until(
+            EC.visibility_of_all_elements_located(
+                (By.XPATH, "//a[@class='media-gallery__item-thumbnail']/img")
+            )
+        )
+
+        bildaj_ligiloj = [bildo.get_attribute('src') for bildo in bildoj]
+
+        vojo = os.getcwd()
+        kunigita_vojo = os.path.join(vojo, "bildoj")
+        if not os.path.exists(kunigita_vojo):
+            os.mkdir(kunigita_vojo)
+
+        for ligilo in bildaj_ligiloj:
+            savu_kiel = os.path.join(kunigita_vojo, os.path.basename(ligilo))
+            wget.download(ligilo, savu_kiel)
+            print(f"Dosiero '{os.path.basename(ligilo)} savatas en {savu_kiel}'")
+
+    def malsxaltu(self):
+        self.quit()
